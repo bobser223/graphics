@@ -16,5 +16,11 @@ set(libs
         glm
 )
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME}
+#        src/main.cpp
+        src/HW/hw001/first_rectangle.cpp
+        src/HW/utils/shader_utils/reader.h
+        src/HW/utils/shader_utils/reader.cpp
+        src/HW/utils/shader_utils/creator.cpp
+        src/HW/utils/shader_utils/creator.h)
 target_link_libraries(${PROJECT_NAME} ${libs})
