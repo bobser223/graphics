@@ -20,6 +20,33 @@ std::vector<T> concatenateVectors(const std::vector<std::vector<T>>& vectors) {
     return result;
 }
 
+std::vector<unsigned int> concatenateIndices(
+    const std::vector<std::vector<unsigned int>>& indices,
+    int vertices_per_shape
+) {
+    std::vector<unsigned int> result;
+
+    result.reserve(
+        std::accumulate(
+            indices.begin(),
+            indices.end(),
+            size_t{0},
+            [](size_t sum, const std::vector<unsigned int>& v) {
+                return sum + v.size();
+            }
+        )
+    );
+
+    for (unsigned int shape_idx = 0; shape_idx < indices.size(); shape_idx++) {
+        unsigned int vertex_offset = shape_idx * vertices_per_shape;
+
+        for (unsigned int vertex_index : indices[shape_idx]) {
+            result.push_back(vertex_index + vertex_offset);
+        }
+    }
+
+    return result;
+}
 
 int main(void)
 {
@@ -79,46 +106,73 @@ int main(void)
 
     std::vector<float> rectangle1_vertices = {
         // Rectangle 1 — left, warm gradient
-        -0.9f, -0.5f,  1.0f, 0.2f, 0.1f,   // left bottom — red/orange
-        -0.4f, -0.5f,  1.0f, 0.8f, 0.0f,   // right bottom — orange/yellow
-        -0.9f,  0.1f,  0.8f, 0.0f, 0.2f,   // left top — dark red
+        -0.9f, -0.5f,  1.0f, 0.2f, 0.1f,   // 0 left bottom — red/orange
+        -0.4f, -0.5f,  1.0f, 0.8f, 0.0f,   // 1 right bottom — orange/yellow
+        -0.9f,  0.1f,  0.8f, 0.0f, 0.2f,   // 2 left top — dark red
 
-        -0.4f,  0.1f,  1.0f, 1.0f, 0.2f,   // right top — yellow
-        -0.4f, -0.5f,  1.0f, 0.8f, 0.0f,   // right bottom — orange/yellow
-        -0.9f,  0.1f,  0.8f, 0.0f, 0.2f    // left top — dark red
+        -0.4f,  0.1f,  1.0f, 1.0f, 0.2f,   // 3 right top — yellow
+    };
+
+    std::vector<unsigned int> rectangle1_indices = {
+        0, 1, 2,   // first triangle
+        3, 1, 2    // second triangle
     };
 
     std::vector<float> rectangle2_vertices = {
         // Rectangle 2 — center, cold gradient
-        -0.25f, -0.2f,  0.0f, 0.8f, 1.0f,  // left bottom — cyan
-         0.25f, -0.2f,  0.0f, 0.2f, 1.0f,  // right bottom — blue
-        -0.25f,  0.45f, 0.2f, 1.0f, 0.7f,  // left top — mint
+        -0.25f, -0.2f,  0.0f, 0.8f, 1.0f,  // 0 left bottom — cyan
+         0.25f, -0.2f,  0.0f, 0.2f, 1.0f,  // 1 right bottom — blue
+        -0.25f,  0.45f, 0.2f, 1.0f, 0.7f,  // 2 left top — mint
 
-         0.25f,  0.45f, 0.4f, 0.0f, 1.0f,  // right top — violet-blue
-         0.25f, -0.2f,  0.0f, 0.2f, 1.0f,  // right bottom — blue
-        -0.25f,  0.45f, 0.2f, 1.0f, 0.7f   // left top — mint
+         0.25f,  0.45f, 0.4f, 0.0f, 1.0f,  // 3 right top — violet-blue
+
+    };
+
+    std::vector<unsigned int> rectangle2_indices = {
+        0, 1, 2,   // first triangle
+        3, 1, 2    // second triangle
     };
 
     std::vector<float> rectangle3_vertices = {
         // Rectangle 3 — right, purple/green gradient
-        0.45f, -0.7f,  0.7f, 0.0f, 1.0f,  // left bottom — purple
-        0.9f,  -0.7f,  0.1f, 1.0f, 0.3f,  // right bottom — green
-        0.45f, -0.05f, 1.0f, 0.0f, 0.8f,  // left top — pink
+        0.45f, -0.7f,  0.7f, 0.0f, 1.0f,  // 0 left bottom — purple
+        0.9f,  -0.7f,  0.1f, 1.0f, 0.3f,  // 1 right bottom — green
+        0.45f, -0.05f, 1.0f, 0.0f, 0.8f,  // 2 left top — pink
 
-        0.9f,  -0.05f, 0.8f, 1.0f, 0.1f,  // right top — lime
-        0.9f,  -0.7f,  0.1f, 1.0f, 0.3f,  // right bottom — green
-        0.45f, -0.05f, 1.0f, 0.0f, 0.8f   // left top — pink
+        0.9f,  -0.05f, 0.8f, 1.0f, 0.1f,  // 3 right top — lime
    };
 
+    std::vector<unsigned int> rectangle3_indices = {
+        0, 1, 2,   // first triangle
+        3, 1, 2    // second triangle
+    };
 
 
-    std::vector<float> vertices = concatenateVectors<float>({rectangle1_vertices, rectangle2_vertices, rectangle3_vertices});
 
-    size_t vertex_count = vertices.size();
-    size_t points_per_rectangle = 6;
-    const size_t values_per_vertex = 5;
-    const size_t vertex_size = values_per_vertex * sizeof(float);
+    std::vector<float> vertices = concatenateVectors<float>({
+    rectangle1_vertices,
+    rectangle2_vertices,
+    rectangle3_vertices
+});
 
+    const unsigned int vertices_per_rectangle = 4;
+
+    std::vector<unsigned int> indices = concatenateIndices(
+        {rectangle1_indices, rectangle2_indices, rectangle3_indices},
+        vertices_per_rectangle
+    );
+
+    const size_t floats_per_vertex = 5;        // x, y, r, g, b
+    const size_t position_components = 2;      // x, y
+    const size_t color_components = 3;         // r, g, b
+
+    const size_t vertex_stride_bytes = floats_per_vertex * sizeof(float);
+    const size_t vertex_buffer_size_bytes = vertices.size() * sizeof(float);
+    const size_t index_buffer_size_bytes = indices.size() * sizeof(unsigned int);
+
+    const size_t total_float_count = vertices.size();
+    const size_t total_vertex_count = vertices.size() / floats_per_vertex;
+    const size_t total_index_count = indices.size();
     // float vertices[vertex_count*values_per_vertex] = {
     //
     //
@@ -126,32 +180,48 @@ int main(void)
 
     GLuint VBO; // data - ідентифікатор для даних - місток CPU та GPU
     GLuint VAO; // vertex array object
+    GLuint EBO; // index buffer
+
 
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind = activate
-    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vertex_buffer_size_bytes,
+        vertices.data(),
+        GL_STATIC_DRAW
+    );
+    // EBO / index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        index_buffer_size_bytes,
+        indices.data(),
+        GL_STATIC_DRAW
+    );
 
     glVertexAttribPointer(
         0,                  // location - 0
-        2,                  // 2 компоненти: x, y
+        position_components,                  // 2 компоненти: x, y
         GL_FLOAT,           // тип даних
         GL_FALSE,           // не нормалізувати
-        5 * sizeof(float),  // stride: 5 float-а на вершину (кількість елементів в імпровізованому рядку verticies)
+        vertex_stride_bytes,  // stride: 5 float-а на вершину (кількість елементів в імпровізованому рядку verticies)
         (void*)0            // offset: починаємо з 0
     );
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(
         1,                              // location 1 for vertex shader
-        3,                              // r, g, b
+        color_components,                              // r, g, b
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(float),
-        (void*)(2 * sizeof(float))      // після x, y
+        vertex_stride_bytes,
+        (void*)(position_components * sizeof(float))     // після x, y
     );
     glEnableVertexAttribArray(1);
 
@@ -171,7 +241,14 @@ int main(void)
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+        glBindVertexArray(VAO);
+
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(total_index_count),
+            GL_UNSIGNED_INT,
+            0
+        );
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -180,6 +257,7 @@ int main(void)
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE));
 
+    glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteProgram(shaderProgram);
