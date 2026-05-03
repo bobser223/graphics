@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <ranges>
 #include <vector>
+#include "texture_creator.h"
 
 #include "reader.h"
 #include "creator.h"
@@ -81,12 +82,12 @@ int main(void)
 
     GLuint vertex_shader = createShaderFromFile(
         GL_VERTEX_SHADER,
-        PROJECT_PATH /"src"/"HW"/ "hw002" / "triangle.vert"
+        PROJECT_PATH /"src"/"HW"/ "hw003" / "rectangle.vert"
     );
 
     GLuint fragment_shader = createShaderFromFile(
         GL_FRAGMENT_SHADER,
-        PROJECT_PATH /"src"/"HW"/ "hw002" / "foo.frag");
+        PROJECT_PATH /"src"/"HW"/ "hw003" / "rectangle.frag");
 
 
     // Програма з шейдерів
@@ -98,6 +99,24 @@ int main(void)
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
+    GLuint texture1 = createTextureFromFile(
+        PROJECT_PATH / "src" / "HW" / "data" / "hw003" / "texture1.jpeg"
+    );
+    glUseProgram(shaderProgram);
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+
+    GLuint texture2 = createTextureFromFile(
+        PROJECT_PATH / "src" / "HW" / "data" / "hw003" / "texture2.png"
+    );
+    glUseProgram(shaderProgram);
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
+
+    GLuint texture3 = createTextureFromFile(
+        PROJECT_PATH / "src" / "HW" / "data" / "hw003" / "texture3.jpg"
+    );
+    glUseProgram(shaderProgram);
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 2);
+
 
 
 
@@ -106,11 +125,11 @@ int main(void)
 
     std::vector<float> rectangle1_vertices = {
         // Rectangle 1 — left, warm gradient
-        -0.9f, -0.5f,  1.0f, 0.2f, 0.1f,   // 0 left bottom — red/orange
-        -0.4f, -0.5f,  1.0f, 0.8f, 0.0f,   // 1 right bottom — orange/yellow
-        -0.9f,  0.1f,  0.8f, 0.0f, 0.2f,   // 2 left top — dark red
+        -0.9f, -0.5f,  1.0f, 0.2f, 0.1f, 0.0f, 0.0f,   // 0 left bottom — red/orange
+        -0.4f, -0.5f,  1.0f, 0.8f, 0.0f, 1.0f, 0.0f,  // 1 right bottom — orange/yellow
+        -0.9f,  0.1f,  0.8f, 0.0f, 0.2f, 0.0f, 1.0f,  // 2 left top — dark red
 
-        -0.4f,  0.1f,  1.0f, 1.0f, 0.2f,   // 3 right top — yellow
+        -0.4f,  0.1f,  1.0f, 1.0f, 0.2f, 1.0f, 1.0f  // 3 right top — yellow
     };
 
     std::vector<unsigned int> rectangle1_indices = {
@@ -120,11 +139,11 @@ int main(void)
 
     std::vector<float> rectangle2_vertices = {
         // Rectangle 2 — center, cold gradient
-        -0.25f, -0.2f,  0.0f, 0.8f, 1.0f,  // 0 left bottom — cyan
-         0.25f, -0.2f,  0.0f, 0.2f, 1.0f,  // 1 right bottom — blue
-        -0.25f,  0.45f, 0.2f, 1.0f, 0.7f,  // 2 left top — mint
+        -0.25f, -0.2f,  0.0f, 0.8f, 1.0f, 0.0f, 0.0f, // 0 left bottom — cyan
+         0.25f, -0.2f,  0.0f, 0.2f, 1.0f, 1.0f, 0.0f, // 1 right bottom — blue
+        -0.25f,  0.45f, 0.2f, 1.0f, 0.7f, 0.0f, 1.0f, // 2 left top — mint
 
-         0.25f,  0.45f, 0.4f, 0.0f, 1.0f,  // 3 right top — violet-blue
+         0.25f,  0.45f, 0.4f, 0.0f, 1.0f, 1.0f, 1.0f // 3 right top — violet-blue
 
     };
 
@@ -135,11 +154,11 @@ int main(void)
 
     std::vector<float> rectangle3_vertices = {
         // Rectangle 3 — right, purple/green gradient
-        0.45f, -0.7f,  0.7f, 0.0f, 1.0f,  // 0 left bottom — purple
-        0.9f,  -0.7f,  0.1f, 1.0f, 0.3f,  // 1 right bottom — green
-        0.45f, -0.05f, 1.0f, 0.0f, 0.8f,  // 2 left top — pink
+        0.45f, -0.7f,  0.7f, 0.0f, 1.0f, 0.0f, 0.0f, // 0 left bottom — purple
+        0.9f,  -0.7f,  0.1f, 1.0f, 0.3f, 1.0f, 0.0f, // 1 right bottom — green
+        0.45f, -0.05f, 1.0f, 0.0f, 0.8f, 0.0f, 1.0f, // 2 left top — pink
 
-        0.9f,  -0.05f, 0.8f, 1.0f, 0.1f,  // 3 right top — lime
+        0.9f,  -0.05f, 0.8f, 1.0f, 0.1f, 1.0f, 1.0f // 3 right top — lime
    };
 
     std::vector<unsigned int> rectangle3_indices = {
@@ -162,9 +181,14 @@ int main(void)
         vertices_per_rectangle
     );
 
-    const size_t floats_per_vertex = 5;        // x, y, r, g, b
+    const size_t floats_per_vertex = 7;        // x, y, r, g, b, u, v
     const size_t position_components = 2;      // x, y
     const size_t color_components = 3;         // r, g, b
+    const size_t texture_components = 2;  // u, v
+
+    const size_t position_offset_floats = 0;
+    const size_t color_offset_floats = 2;
+    const size_t texture_offset_floats = 5;
 
     const size_t vertex_stride_bytes = floats_per_vertex * sizeof(float);
     const size_t vertex_buffer_size_bytes = vertices.size() * sizeof(float);
@@ -173,10 +197,7 @@ int main(void)
     const size_t total_float_count = vertices.size();
     const size_t total_vertex_count = vertices.size() / floats_per_vertex;
     const size_t total_index_count = indices.size();
-    // float vertices[vertex_count*values_per_vertex] = {
-    //
-    //
-    // };
+
 
     GLuint VBO; // data - ідентифікатор для даних - місток CPU та GPU
     GLuint VAO; // vertex array object
@@ -225,6 +246,17 @@ int main(void)
     );
     glEnableVertexAttribArray(1);
 
+    // texture coordinates: u, v
+    glVertexAttribPointer(
+        2,
+        texture_components,
+        GL_FLOAT,
+        GL_FALSE,
+        vertex_stride_bytes,
+        (void*)(texture_offset_floats * sizeof(float))
+    );
+    glEnableVertexAttribArray(2);
+
 
 
 
@@ -240,14 +272,43 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+
         glBindVertexArray(VAO);
-        glBindVertexArray(VAO);
+
+        // rectangle 1
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
 
         glDrawElements(
             GL_TRIANGLES,
-            static_cast<GLsizei>(total_index_count),
+            6,
             GL_UNSIGNED_INT,
-            0
+            (void*)(0 * sizeof(unsigned int))
+        );
+
+        // rectangle 2
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        glDrawElements(
+            GL_TRIANGLES,
+            6,
+            GL_UNSIGNED_INT,
+            (void*)(6 * sizeof(unsigned int))
+        );
+
+        // rectangle 3
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture3);
+
+        glDrawElements(
+            GL_TRIANGLES,
+            6,
+            GL_UNSIGNED_INT,
+            (void*)(12 * sizeof(unsigned int))
         );
 
         /* Swap front and back buffers */
@@ -257,6 +318,8 @@ int main(void)
         glfwPollEvents();
     } while (!glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE));
 
+
+    glDeleteTextures(1, &texture1);
     glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
