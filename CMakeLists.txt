@@ -38,11 +38,23 @@ add_executable( homework003
         src/HW/utils/shader_utils/reader.cpp
         src/HW/utils/texture_utils/texture_creator.h
         src/HW/utils/texture_utils/texture_creator.cpp
-
-
 )
 
 target_link_libraries(homework003 ${libs})
+
+
+add_executable(homework003_rotation
+        src/HW/hw003/rotation/rotation.cpp
+        src/HW/utils/shader_utils/creator.h
+        src/HW/utils/shader_utils/creator.cpp
+        src/HW/utils/shader_utils/reader.h
+        src/HW/utils/shader_utils/reader.cpp
+        src/HW/utils/texture_utils/texture_creator.h
+        src/HW/utils/texture_utils/texture_creator.cpp
+)
+
+target_link_libraries(homework003_rotation ${libs})
+
 
 
 
