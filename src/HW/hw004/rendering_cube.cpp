@@ -55,8 +55,93 @@ std::vector<unsigned int> concatenateIndices(
 }
 
 
+bool isMouseOverProjectedCube(
+    GLFWwindow* window,
+    const glm::mat4& model,
+    const glm::mat4& view,
+    const glm::mat4& projection
+) {
+    int window_width;
+    int window_height;
+    glfwGetWindowSize(window, &window_width, &window_height);
 
+    int framebuffer_width;
+    int framebuffer_height;
+    glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
 
+    double mouse_x;
+    double mouse_y;
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+    // GLFW mouse coords: origin top-left.
+    // OpenGL viewport coords: origin bottom-left.
+    float mouse_fb_x = static_cast<float>(mouse_x * framebuffer_width / window_width);
+    float mouse_fb_y = static_cast<float>((window_height - mouse_y) * framebuffer_height / window_height);
+
+    glm::vec4 viewport(
+        0.0f,
+        0.0f,
+        static_cast<float>(framebuffer_width),
+        static_cast<float>(framebuffer_height)
+    );
+
+    std::vector<glm::vec3> cube_corners = {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+
+        {0.0f, 0.0f, 1.0f},
+        {1.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f},
+        {0.0f, 1.0f, 1.0f}
+    };
+
+    float min_x =  std::numeric_limits<float>::max();
+    float max_x = -std::numeric_limits<float>::max();
+    float min_y =  std::numeric_limits<float>::max();
+    float max_y = -std::numeric_limits<float>::max();
+
+    glm::mat4 model_view = view * model;
+
+    for (const glm::vec3& corner : cube_corners) {
+        glm::vec3 screen_pos = glm::project(
+            corner,
+            model_view,
+            projection,
+            viewport
+        );
+
+        min_x = std::min(min_x, screen_pos.x);
+        max_x = std::max(max_x, screen_pos.x);
+        min_y = std::min(min_y, screen_pos.y);
+        max_y = std::max(max_y, screen_pos.y);
+    }
+
+    return mouse_fb_x >= min_x &&
+           mouse_fb_x <= max_x &&
+           mouse_fb_y >= min_y &&
+           mouse_fb_y <= max_y;
+}
+
+glm::mat4 buildCubeModel(const glm::vec3& position, float angle)
+{
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, position);
+
+    model = glm::translate(model, glm::vec3(0.5f, 0.5f, 0.5f));
+
+    model = glm::rotate(
+        model,
+        angle,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    );
+
+    model = glm::translate(model, glm::vec3(-0.5f, -0.5f, -0.5f));
+
+    return model;
+}
 
 
 struct ModelOperator {
@@ -333,7 +418,6 @@ int main(void)
         float delta_time = current_frame_time - last_frame_time;
         last_frame_time = current_frame_time;
 
-        // ---------- keyboard movement ----------
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             position.y += move_speed * delta_time;
         }
@@ -350,52 +434,19 @@ int main(void)
             position.x += move_speed * delta_time;
         }
 
-        // ---------- mouse hover ----------
-        double mouse_x;
-        double mouse_y;
-        glfwGetCursorPos(window, &mouse_x, &mouse_y);
+        glm::mat4 model = buildCubeModel(position, angle);
 
-        int window_width;
-        int window_height;
-        glfwGetWindowSize(window, &window_width, &window_height);
-
-        float mouse_ndc_x = static_cast<float>(2.0 * mouse_x / window_width - 1.0);
-        float mouse_ndc_y = static_cast<float>(1.0 - 2.0 * mouse_y / window_height);
-
-        float half_width = 0.5f;
-        float half_height = 0.3f;
-
-        bool is_mouse_over_rectangle =
-            mouse_ndc_x >= position.x - half_width &&
-            mouse_ndc_x <= position.x + half_width &&
-            mouse_ndc_y >= position.y - half_height &&
-            mouse_ndc_y <= position.y + half_height;
-
-        if (is_mouse_over_rectangle) {
-            angle += rotation_speed * delta_time;
-        }
-
-
-        // model = glm::rotate(
-        //     model,
-        //     angle,
-        //     glm::vec3(0.0f, 1.0f, 0.0f)
-        // );
-
-        glm::mat4 model = glm::mat4(1.0f);
-
-        model = glm::translate(model, position);
-
-        model = glm::rotate(
+        bool is_mouse_over_cube = isMouseOverProjectedCube(
+            window,
             model,
-            angle,
-            glm::vec3(0.0f, 0.0f, 1.0f)
+            view,
+            projection
         );
 
-
-
-
-
+        if (is_mouse_over_cube) {
+            angle += rotation_speed * delta_time;
+            model = buildCubeModel(position, angle);
+        }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
