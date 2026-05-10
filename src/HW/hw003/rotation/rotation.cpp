@@ -147,7 +147,7 @@ int main(void)
     const size_t texture_components = 2;  // u, v
 
     const size_t position_offset_floats = 0;
-    const size_t color_offset_floats = 2;
+    const size_t color_offset_floats = 3;
     const size_t texture_offset_floats = 5;
 
     const size_t vertex_stride_bytes = floats_per_vertex * sizeof(float);
@@ -202,7 +202,7 @@ int main(void)
         GL_FLOAT,
         GL_FALSE,
         vertex_stride_bytes,
-        (void*)(position_components * sizeof(float))     // після x, y
+        (void*)(color_offset_floats * sizeof(float))     // після x, y, z
     );
     glEnableVertexAttribArray(1);
 
@@ -289,7 +289,7 @@ int main(void)
 
         glDrawElements(
             GL_TRIANGLES,
-            6,
+            indices.size(),
             GL_UNSIGNED_INT,
             (void*)(0 * sizeof(unsigned int))
         );

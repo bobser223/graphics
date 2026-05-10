@@ -26,7 +26,8 @@ add_executable(homework002
         src/HW/utils/shader_utils/creator.cpp
         src/HW/utils/shader_utils/creator.h
         src/HW/utils/texture_utils/texture_creator.h
-        src/HW/utils/texture_utils/texture_creator.cpp)
+        src/HW/utils/texture_utils/texture_creator.cpp
+        src/HW/hw004/rendering_cube.cpp)
 
 target_link_libraries(homework002 ${libs})
 
@@ -54,6 +55,18 @@ add_executable(homework003_rotation
 )
 
 target_link_libraries(homework003_rotation ${libs})
+
+add_executable(homework004_cube
+        src/HW/hw004/rendering_cube.cpp
+        src/HW/utils/shader_utils/creator.h
+        src/HW/utils/shader_utils/creator.cpp
+        src/HW/utils/shader_utils/reader.h
+        src/HW/utils/shader_utils/reader.cpp
+        src/HW/utils/texture_utils/texture_creator.h
+        src/HW/utils/texture_utils/texture_creator.cpp
+)
+
+target_link_libraries(homework004_cube ${libs})
 
 
 
